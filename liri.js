@@ -21,18 +21,32 @@ moment().format();
 
 //input variables
 var option = process.argv[2]
-var parameter = process.argv[3] //+ " "+ process.argv[process.argv.length - 1];
+var parameter = process.argv.slice(3)
 
 console.log("-----------------")
 console.log (parameter)
 console.log("-----------------")
 
+removeDuplicateWords = function () {
+ result = [];
+   str = parameter//.split(" ");
+  
+
+  for(var i =0; i < str.length ; i++){
+      if(result.indexOf(str[i]) === -1){
+        result.push(str[i]);
+      } 
+  }
+   result.join(" ");
+   parameter = result[0]
+  }
 
 runLiri (option, parameter)
 // var wordCheck = parameter.split(",")
 // console.log ("below should be array")
 // console.log(wordCheck)
 // console.log("-----------------")
+
 
 // if (wordCheck.length < 3) {
 //     console.log("one word function runs")
@@ -42,6 +56,9 @@ runLiri (option, parameter)
 //     console.log (uniqueList)
 // }
 function runLiri (option, parameter) {
+ 
+//removeDuplicateWords()
+//parameter = parameter.replace(/\s+/g, '');
 switch (option) {
     case "concert-this":
         concertThis(parameter);
@@ -51,21 +68,20 @@ switch (option) {
         break;
     case "movie-this":
         movieThis(parameter);
-        console.log("switch")
         break;
     case "do-what-it-says":
         doThis(parameter);
         break;
     default:
-        console.log("Choose one of the following commands: \nconcert-this, \nspotify-this-song, \nmovie-this, \ndo-what-it-says")
+        console.log("Choose one of the following commands: \nconcert-this <artist>, \nspotify-this-song <song name>, \nmovie-this <movie title>, \ndo-what-it-says")
     
 };
 }
 
 //concert-this command
 function concertThis(parameter) {
-    if (!parameter) {
-        parameter = "celine+dione"
+    if (parameter == "") {
+        return console.log("Error: Please enter an <artist>")
     }
     var queryUrl = "https://rest.bandsintown.com/artists/" + parameter + "/events?app_id=codingbootcamp"
     console.log(queryUrl)
@@ -73,17 +89,26 @@ function concertThis(parameter) {
         .then(function (response) {
             //console.log(response)
             if (response.data.length === 0) {
-                console.log("No shows available, please try again")
+                console.log("No shows available, please search for another artist")
             }
             for (var i = 0; i < response.data.length; i++) {
 
                 var datetime = response.data[i].datetime; 
+               // console.log(datetime)
                 var dateArr = datetime.split('T'); 
+                // console.log(dateArr)
+                // console.log(dateArr[0])
+                // console.log(dateArr[1])
+
+                
+                var concertDate = moment(dateArr[0]).format("dddd, MMMM Do YYYY")
+               var concertTime = moment(dateArr[1], "HH:mm:ss").format("h:mm A");                      
                 var concertResults =
                     "------------------------------------------------" +
                     "\nVenue Name: " + response.data[i].venue.name +
                     "\nVenue Location: " + response.data[i].venue.city +
-                    "\nDate of the Event: " + moment(dateArr[0], "MM-DD-YYYY"); 
+                    "\nDate of the Event: " + concertDate +
+                    "\nStart time of the Event: " + concertTime 
                 console.log(concertResults);
             }
         })
@@ -95,8 +120,9 @@ function concertThis(parameter) {
 
 //spotify-this-song command
 function spotifySong(parameter){
-   if (!parameter) {
+   if (parameter == "") {
        parameter = "the&sign"
+       console.log ("Please enter a <song title>")
    }
     spotify
     .search({ type: 'track', query: parameter })
@@ -119,6 +145,7 @@ function spotifySong(parameter){
 
 //movie-this command
 function movieThis() {
+    console.log("in movie function" + parameter)
     if (!parameter) {
         parameter = "mr nobody"
     }
@@ -131,7 +158,7 @@ function movieThis() {
                "\nTitle: " + response.data.Title +
                "\nYear Released: " + response.data.Released +
                "\nIMDB Rating: " + response.data. imdbRating +
-               "\nRotten Tomatoes Rating: " + response.data.Ratings[1].Value +
+               //"\nRotten Tomatoes Rating: " + response.data.Ratings[1].Value +
                "\nCountry Produced: " + response.data.Country +
                "\nLanguage: " + response.data.Language +
                "\nPlot: " + response.data.Plot +
